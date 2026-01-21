@@ -6,19 +6,17 @@ Build-Depends: debhelper-compat (= 13)
 Standards-Version: 4.6.2
 
 Package: wlanpi-shell-config
-Version: 1.0.0
 Architecture: all
 Depends: vim, tmux, bash-completion
 Recommends: fzf, xclip
-Description: Opinionated shell configuration for WLAN Pi
- Provides optimized vim, tmux, and bash configurations.
-
- Includes:
-  * Enhanced tmux
-  * Improved vim setup with leader key bindings
+Description: Professional shell configuration for WLAN Pi
+ Provides optimized vim, tmux, and bash configurations for network
+ professionals. Includes:
+  * Enhanced tmux with WiFi monitoring status bar
+  * Professional vim setup with leader key bindings
   * Comprehensive bash aliases for system administration
   * Large history buffer and improved history management
   * Terminal title support for tmux sessions
  .
  These configurations are designed for network engineers and provide
- a consistent, improved shell environment across WLAN Pi devices.
+ a consistent, powerful shell environment across all WLAN Pi devices.
