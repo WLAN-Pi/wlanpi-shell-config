@@ -1,0 +1,9 @@
+# These files are intentionally in /etc/skel/ to provide default shell configs
+# for new users and the wlanpi user during image build
+wlanpi-shell-config: package-contains-file-in-etc-skel etc/skel/.vimrc
+wlanpi-shell-config: package-contains-file-in-etc-skel etc/skel/.tmux.conf
+wlanpi-shell-config: package-contains-file-in-etc-skel etc/skel/.bash_aliases
+wlanpi-shell-config: package-contains-file-in-etc-skel etc/skel/.bashrc.d/wlanpi-shell
+
+# This file is sourced, not executed, so executable bit is not needed
+wlanpi-shell-config: script-not-executable etc/skel/.bashrc.d/wlanpi-shell
