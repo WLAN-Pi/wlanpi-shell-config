@@ -1,0 +1,204 @@
+.TH WLANPI-SHELL 1 "January 2026" "WLAN Pi" "User Commands"
+.SH NAME
+wlanpi-shell \- Opinionated shell configuration for WLAN Pi
+.SH DESCRIPTION
+Provides optimized vim, tmux, and bash configurations for network professionals working with WLAN Pi devices.
+
+.SH Vim keybindings
+.B Leader key:
+Space
+
+.PP
+.B File operations
+.RS
+Space+w    Save file
+.RE
+.RS
+Space+q    Quit
+.RE
+.RS
+Space+h    Clear search highlighting
+.RE
+
+.PP
+.B Splits
+.RS
+Space+v    Vertical split
+.RE
+.RS
+Space+s    Horizontal split
+.RE
+.RS
+Space+wh   Move to left window
+.RE
+.RS
+Space+wj   Move to window below
+.RE
+.RS
+Space+wk   Move to window above
+.RE
+.RS
+Space+wl   Move to right window
+.RE
+
+.PP
+.B Buffers
+.RS
+Space+bn   Next buffer
+.RE
+.RS
+Space+bp   Previous buffer
+.RE
+.RS
+Space+bd   Delete buffer
+.RE
+
+.PP
+.B Tabs
+.RS
+Ctrl+h     Previous tab
+.RE
+.RS
+Ctrl+l     Next tab
+.RE
+
+.SH Tmux keybindings
+.B Prefix key:
+Ctrl+b (default)
+
+.PP
+.B Session management
+.RS
+Prefix+Ctrl+s    Choose session
+.RE
+
+.PP
+.B Window management
+.RS
+Prefix+c         Create new window
+.RE
+.RS
+Prefix+;         Last window
+.RE
+.RS
+Prefix+n         Next window
+.RE
+.RS
+Prefix+p         Previous window
+.RE
+
+.PP
+.B Pane management
+.RS
+Prefix+h/j/k/l   Navigate panes (vim-style)
+.RE
+.RS
+Prefix+"         Split horizontal
+.RE
+.RS
+Prefix+%         Split vertical
+.RE
+.RS
+Prefix+z         Zoom/unzoom pane
+.RE
+.RS
+Prefix+S         Synchronize panes
+.RE
+
+.PP
+.B Resize mode
+.RS
+Prefix+r         Enter resize mode
+.RE
+.RS
+h/j/k/l          Resize panes (vim-style)
+.RE
+.RS
+Escape           Exit resize mode
+.RE
+
+.PP
+.B Copy mode
+.RS
+Prefix+[         Enter copy mode
+.RE
+.RS
+v                Begin selection
+.RE
+.RS
+y                Copy selection
+.RE
+.RS
+Prefix+p         Paste
+.RE
+
+.SH Bash aliases
+.B System monitoring
+.RS
+journal          Follow system journal
+.RE
+.RS
+running          List running services
+.RE
+.RS
+failed           List failed services
+.RE
+.RS
+temps            Show Pi temperature and voltage
+.RE
+
+.PP
+.B Network tools
+.RS
+ports            List open ports (ss)
+.RE
+.RS
+connections      Count established connections
+.RE
+.RS
+listening        Show listening ports
+.RE
+
+.PP
+.B File operations
+.RS
+ll               Detailed list
+.RE
+.RS
+la               List all including hidden
+.RE
+.RS
+lt               List by time
+.RE
+.RS
+lS               List by size
+.RE
+
+.SH Customization
+.B Changing default editor
+.PP
+To change from vim to nano, add to ~/.bashrc:
+.PP
+.RS
+export EDITOR=nano
+.RE
+.RS
+export VISUAL=nano
+.RE
+
+.SH FILES
+/etc/skel/.vimrc
+.br
+/etc/skel/.tmux.conf
+.br
+/etc/skel/.bash_aliases
+.br
+/etc/skel/.bashrc.d/wlanpi-shell
+
+.SH SEE ALSO
+.BR vim (1),
+.BR tmux (1),
+.BR bash (1)
+
+.SH AUTHOR
+WLAN Pi

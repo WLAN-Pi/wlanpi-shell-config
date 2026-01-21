@@ -1,0 +1,11 @@
+wlanpi-shell-config (1.0.0) bookworm; urgency=medium
+
+  * Initial release
+  * Opinionated vim configuration with leader key bindings
+  * Enhanced tmux
+  * Additional bash aliases for network professionals
+  * Large history buffer (10,000 lines) with timestamps
+  * Terminal title support for tmux sessions
+  * fzf integration for fuzzy finding
+
+ -- Josh Schmelzle <josh@joshschmelzle.com>  Tue, 21 Jan 2025 13:00:00 -0500

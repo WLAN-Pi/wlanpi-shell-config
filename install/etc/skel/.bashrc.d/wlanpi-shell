@@ -1,0 +1,47 @@
+#!/bin/bash
+# WLAN Pi Shell Enhancements
+# Part of wlanpi-shell-config package
+
+#-----------------------------------------
+# BASH HISTORY CONFIGURATION
+#-----------------------------------------
+# Increase history size for better recall
+export HISTSIZE=10000
+export HISTFILESIZE=10000
+
+# Don't put duplicate lines or lines starting with space in history
+export HISTCONTROL=ignoreboth:erasedups
+
+# Append to history file, don't overwrite it
+shopt -s histappend
+
+# Save multi-line commands as one command
+shopt -s cmdhist
+
+# Record each command as it gets issued (not just at shell exit)
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a"
+
+# Add timestamp to history
+export HISTTIMEFORMAT='%F %T '
+
+# Ignore common commands that clutter history
+export HISTIGNORE='ls:ll:la:cd:pwd:exit:clear:history'
+
+#-----------------------------------------
+# TMUX TERMINAL TITLE SUPPORT
+#-----------------------------------------
+# Update terminal title when running inside tmux
+# This is needed because /etc/bashrc only sets PROMPT_COMMAND for xterm* and
+# screen* terminals, but tmux sets TERM=tmux-256color
+# Works in conjunction with tmux's "set-titles on" feature
+if [[ "$TERM" =~ ^tmux ]]; then
+    PROMPT_COMMAND+=('printf "\033]0;%s@%s:%s\007" "${USER}" "${HOSTNAME%%.*}" "${PWD/#$HOME/\~}"')
+fi
+
+#-----------------------------------------
+# FZF INTEGRATION
+#-----------------------------------------
+# Enable fuzzy finding if fzf is installed
+if command -v fzf &> /dev/null; then
+    eval "$(fzf --bash)" 2>/dev/null
+fi

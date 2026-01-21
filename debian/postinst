@@ -1,0 +1,44 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    configure)
+        # For new installations (not upgrades), copy to wlanpi user if exists
+        # and their configs don't exist yet
+        if [ -d "/home/wlanpi" ]; then
+            echo "Checking for wlanpi user shell configurations..."
+
+            # Copy files if they don't exist (never overwrite)
+            if [ ! -f /home/wlanpi/.vimrc ]; then
+                cp /etc/skel/.vimrc /home/wlanpi/ && chown wlanpi:wlanpi /home/wlanpi/.vimrc
+                echo "  Installed .vimrc"
+            fi
+
+            if [ ! -f /home/wlanpi/.tmux.conf ]; then
+                cp /etc/skel/.tmux.conf /home/wlanpi/ && chown wlanpi:wlanpi /home/wlanpi/.tmux.conf
+                echo "  Installed .tmux.conf"
+            fi
+
+            if [ ! -f /home/wlanpi/.bash_aliases ]; then
+                cp /etc/skel/.bash_aliases /home/wlanpi/ && chown wlanpi:wlanpi /home/wlanpi/.bash_aliases
+                echo "  Installed .bash_aliases"
+            fi
+
+            if [ ! -d /home/wlanpi/.bashrc.d ]; then
+                mkdir -p /home/wlanpi/.bashrc.d
+                chown wlanpi:wlanpi /home/wlanpi/.bashrc.d
+            fi
+
+            if [ ! -f /home/wlanpi/.bashrc.d/wlanpi-shell ]; then
+                cp /etc/skel/.bashrc.d/wlanpi-shell /home/wlanpi/.bashrc.d/ && chown wlanpi:wlanpi /home/wlanpi/.bashrc.d/wlanpi-shell
+                echo "  Installed .bashrc.d/wlanpi-shell"
+            fi
+        fi
+
+        echo ""
+        echo "wlanpi-shell-config installed successfully"
+        echo "Documentation: man wlanpi-shell"
+        ;;
+esac
+
+exit 0
