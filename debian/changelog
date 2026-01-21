@@ -1,3 +1,14 @@
+wlanpi-shell-config (1.1.0) bookworm; urgency=medium
+
+  * Fix FZF integration for Debian bookworm (switch to traditional sourcing method)
+  * Add root user configuration for consistent shell experience
+  * Add vim directory setup (undodir and viminfo) with proper permissions
+  * Add automatic .bashrc.d sourcing to .bashrc
+  * Split ghostty terminal support into separate optional file
+  * Match pi-gen shell configuration behavior
+
+ -- Josh Schmelzle <josh@joshschmelzle.com>  Wed, 22 Jan 2026 00:00:00 +0000
+
 wlanpi-shell-config (1.0.0) bookworm; urgency=medium
 
   * Initial release

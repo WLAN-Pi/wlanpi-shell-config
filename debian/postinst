@@ -1,39 +1,142 @@
 #!/bin/bash
 set -e
 
+# Function to setup vim directories for a user
+setup_vim_dirs() {
+    local user_home=$1
+    local user_name=$2
+    local group_name=$3
+    
+    mkdir -p "$user_home/.vim/undodir"
+    touch "$user_home/.vim/viminfo"
+    
+    if [ "$user_name" != "root" ]; then
+        chown -R "$user_name:$group_name" "$user_home/.vim"
+    fi
+    
+    chmod 600 "$user_home/.vim/viminfo"
+    chmod 700 "$user_home/.vim/undodir"
+}
+
+# Function to add bashrc.d sourcing to a user's .bashrc
+add_bashrc_sourcing() {
+    local bashrc_file=$1
+    local user_name=$2
+    local group_name=$3
+    
+    if [ ! -f "$bashrc_file" ]; then
+        return
+    fi
+    
+    # Check if sourcing already present
+    if grep -q "bashrc.d" "$bashrc_file"; then
+        return
+    fi
+    
+    # Add sourcing block at end of .bashrc
+    cat >> "$bashrc_file" << 'BASHRC_EOF'
+
+# Source WLAN Pi shell enhancements
+if [ -d ~/.bashrc.d ]; then
+    for file in ~/.bashrc.d/*; do
+        if [ -f "$file" ] && [ -r "$file" ]; then
+            source "$file"
+        fi
+    done
+fi
+BASHRC_EOF
+
+    # Set ownership if not root
+    if [ "$user_name" != "root" ]; then
+        chown "$user_name:$group_name" "$bashrc_file"
+    fi
+}
+
 case "$1" in
     configure)
-        # For new installations (not upgrades), copy to wlanpi user if exists
-        # and their configs don't exist yet
+        # Setup for wlanpi user (if exists)
         if [ -d "/home/wlanpi" ]; then
             echo "Checking for wlanpi user shell configurations..."
 
             # Copy files if they don't exist (never overwrite)
             if [ ! -f /home/wlanpi/.vimrc ]; then
-                cp /etc/skel/.vimrc /home/wlanpi/ && chown wlanpi:wlanpi /home/wlanpi/.vimrc
+                cp /etc/skel/.vimrc /home/wlanpi/
+                chown wlanpi:wlanpi /home/wlanpi/.vimrc
                 echo "  Installed .vimrc"
             fi
 
             if [ ! -f /home/wlanpi/.tmux.conf ]; then
-                cp /etc/skel/.tmux.conf /home/wlanpi/ && chown wlanpi:wlanpi /home/wlanpi/.tmux.conf
+                cp /etc/skel/.tmux.conf /home/wlanpi/
+                chown wlanpi:wlanpi /home/wlanpi/.tmux.conf
                 echo "  Installed .tmux.conf"
             fi
 
             if [ ! -f /home/wlanpi/.bash_aliases ]; then
-                cp /etc/skel/.bash_aliases /home/wlanpi/ && chown wlanpi:wlanpi /home/wlanpi/.bash_aliases
+                cp /etc/skel/.bash_aliases /home/wlanpi/
+                chown wlanpi:wlanpi /home/wlanpi/.bash_aliases
                 echo "  Installed .bash_aliases"
             fi
 
-            if [ ! -d /home/wlanpi/.bashrc.d ]; then
-                mkdir -p /home/wlanpi/.bashrc.d
-                chown wlanpi:wlanpi /home/wlanpi/.bashrc.d
-            fi
+            # Setup .bashrc.d directory and files
+            mkdir -p /home/wlanpi/.bashrc.d
+            chown wlanpi:wlanpi /home/wlanpi/.bashrc.d
 
             if [ ! -f /home/wlanpi/.bashrc.d/wlanpi-shell ]; then
-                cp /etc/skel/.bashrc.d/wlanpi-shell /home/wlanpi/.bashrc.d/ && chown wlanpi:wlanpi /home/wlanpi/.bashrc.d/wlanpi-shell
+                cp /etc/skel/.bashrc.d/wlanpi-shell /home/wlanpi/.bashrc.d/
+                chown wlanpi:wlanpi /home/wlanpi/.bashrc.d/wlanpi-shell
                 echo "  Installed .bashrc.d/wlanpi-shell"
             fi
+
+            if [ ! -f /home/wlanpi/.bashrc.d/ghostty ]; then
+                cp /etc/skel/.bashrc.d/ghostty /home/wlanpi/.bashrc.d/
+                chown wlanpi:wlanpi /home/wlanpi/.bashrc.d/ghostty
+                echo "  Installed .bashrc.d/ghostty"
+            fi
+
+            # Setup vim directories for wlanpi user
+            setup_vim_dirs "/home/wlanpi" "wlanpi" "wlanpi"
+            
+            # Add .bashrc.d sourcing to wlanpi's .bashrc
+            add_bashrc_sourcing "/home/wlanpi/.bashrc" "wlanpi" "wlanpi"
         fi
+
+        # Setup for root user
+        echo "Configuring root user shell..."
+        
+        # Copy config files to root if they don't exist
+        if [ ! -f /root/.vimrc ]; then
+            cp /etc/skel/.vimrc /root/
+            echo "  Installed root .vimrc"
+        fi
+
+        if [ ! -f /root/.tmux.conf ]; then
+            cp /etc/skel/.tmux.conf /root/
+            echo "  Installed root .tmux.conf"
+        fi
+
+        if [ ! -f /root/.bash_aliases ]; then
+            cp /etc/skel/.bash_aliases /root/
+            echo "  Installed root .bash_aliases"
+        fi
+
+        # Setup .bashrc.d for root
+        mkdir -p /root/.bashrc.d
+
+        if [ ! -f /root/.bashrc.d/wlanpi-shell ]; then
+            cp /etc/skel/.bashrc.d/wlanpi-shell /root/.bashrc.d/
+            echo "  Installed root .bashrc.d/wlanpi-shell"
+        fi
+
+        if [ ! -f /root/.bashrc.d/ghostty ]; then
+            cp /etc/skel/.bashrc.d/ghostty /root/.bashrc.d/
+            echo "  Installed root .bashrc.d/ghostty"
+        fi
+
+        # Setup vim directories for root
+        setup_vim_dirs "/root" "root" "root"
+        
+        # Add .bashrc.d sourcing to root's .bashrc
+        add_bashrc_sourcing "/root/.bashrc" "root" "root"
 
         echo ""
         echo "wlanpi-shell-config installed successfully"

@@ -42,6 +42,12 @@ fi
 # FZF INTEGRATION
 #-----------------------------------------
 # Enable fuzzy finding if fzf is installed
-if command -v fzf &> /dev/null; then
-    eval "$(fzf --bash)" 2>/dev/null
+# Key bindings: Ctrl+R (history), Ctrl+T (files), Alt+C (directories)
+if [ -f /usr/share/doc/fzf/examples/key-bindings.bash ]; then
+    source /usr/share/doc/fzf/examples/key-bindings.bash
+fi
+
+# Enable fzf completion (trigger with **)
+if [ -f /usr/share/bash-completion/completions/fzf ]; then
+    source /usr/share/bash-completion/completions/fzf
 fi
