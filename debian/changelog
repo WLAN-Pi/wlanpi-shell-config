@@ -1,4 +1,4 @@
-wlanpi-shell-config (1.0.0-1) bookworm; urgency=medium
+wlanpi-shell-config (1.0.0) bookworm; urgency=medium
 
   * Initial release
   * Opinionated vim configuration with leader key bindings
