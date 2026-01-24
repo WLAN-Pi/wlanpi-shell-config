@@ -24,7 +24,7 @@ This package provides optimized vim, tmux, and bash configurations.
   - Custom aliases
   - Raspberry Pi specific aliases
   - System monitoring shortcuts
-  - fzf integration (if installed)
+  - fzf integration bundled
 
 ## Installation
 
@@ -99,8 +99,10 @@ User configs in `~/` take precedence over `/etc/skel/`. Edit your copies freely.
 
 ## Dependencies
 
-- **Required:** vim, tmux, bash-completion
-- **Recommended:** fzf (fuzzy finder), xclip (clipboard support)
+- **Required:** vim, tmux, bash-completion, fzf
+- **Optional:** xclip (clipboard support for tmux/vim)
+
+**Note:** fzf shell integration (ctrl-r, ctrl-t, alt-c) is bundled with this package to ensure functionality on systems where documentation files may be stripped to save space.
 
 ## Files
 
@@ -108,6 +110,8 @@ User configs in `~/` take precedence over `/etc/skel/`. Edit your copies freely.
 - `/etc/skel/.tmux.conf`
 - `/etc/skel/.bash_aliases`
 - `/etc/skel/.bashrc.d/wlanpi-shell`
+- `/etc/skel/.bashrc.d/fzf/key-bindings.bash`
+- `/etc/skel/.bashrc.d/fzf/completion.bash`
 
 ## Building from source
 

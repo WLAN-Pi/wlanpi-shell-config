@@ -1,3 +1,13 @@
+wlanpi-shell-config (1.1.1) bookworm; urgency=medium
+
+  * Bundle fzf shell integration (key-bindings and completion)
+  * Fixes ctrl-r fzf history search when docs are stripped
+  * Add fallback to system fzf files if bundled files are missing
+  * Move fzf from Recommends to Depends (ensures fzf is always installed)
+  * Move xclip from Recommends to Suggests (optional clipboard support)
+
+ -- Josh Schmelzle <josh@joshschmelzle.com>  Fri, 24 Jan 2026 14:55:00 +0000
+
 wlanpi-shell-config (1.1.0) bookworm; urgency=medium
 
   * Fix FZF integration for Debian bookworm (switch to traditional sourcing method)

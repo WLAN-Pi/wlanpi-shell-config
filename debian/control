@@ -7,8 +7,8 @@ Standards-Version: 4.6.2
 
 Package: wlanpi-shell-config
 Architecture: all
-Depends: ${misc:Depends}, vim, tmux, bash-completion
-Recommends: fzf, xclip
+Depends: ${misc:Depends}, vim, tmux, bash-completion, fzf
+Suggests: xclip
 Description: Professional shell configuration for WLAN Pi
  Provides optimized vim, tmux, and bash configurations for network
  professionals. Includes:

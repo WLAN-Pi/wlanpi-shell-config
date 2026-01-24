@@ -93,6 +93,22 @@ case "$1" in
                 echo "  Installed .bashrc.d/ghostty"
             fi
 
+            # Setup fzf directory and files
+            mkdir -p /home/wlanpi/.bashrc.d/fzf
+            chown wlanpi:wlanpi /home/wlanpi/.bashrc.d/fzf
+
+            if [ ! -f /home/wlanpi/.bashrc.d/fzf/key-bindings.bash ]; then
+                cp /etc/skel/.bashrc.d/fzf/key-bindings.bash /home/wlanpi/.bashrc.d/fzf/
+                chown wlanpi:wlanpi /home/wlanpi/.bashrc.d/fzf/key-bindings.bash
+                echo "  Installed .bashrc.d/fzf/key-bindings.bash"
+            fi
+
+            if [ ! -f /home/wlanpi/.bashrc.d/fzf/completion.bash ]; then
+                cp /etc/skel/.bashrc.d/fzf/completion.bash /home/wlanpi/.bashrc.d/fzf/
+                chown wlanpi:wlanpi /home/wlanpi/.bashrc.d/fzf/completion.bash
+                echo "  Installed .bashrc.d/fzf/completion.bash"
+            fi
+
             # Setup vim directories for wlanpi user
             setup_vim_dirs "/home/wlanpi" "wlanpi" "wlanpi"
             
@@ -130,6 +146,19 @@ case "$1" in
         if [ ! -f /root/.bashrc.d/ghostty ]; then
             cp /etc/skel/.bashrc.d/ghostty /root/.bashrc.d/
             echo "  Installed root .bashrc.d/ghostty"
+        fi
+
+        # Setup fzf directory and files for root
+        mkdir -p /root/.bashrc.d/fzf
+
+        if [ ! -f /root/.bashrc.d/fzf/key-bindings.bash ]; then
+            cp /etc/skel/.bashrc.d/fzf/key-bindings.bash /root/.bashrc.d/fzf/
+            echo "  Installed root .bashrc.d/fzf/key-bindings.bash"
+        fi
+
+        if [ ! -f /root/.bashrc.d/fzf/completion.bash ]; then
+            cp /etc/skel/.bashrc.d/fzf/completion.bash /root/.bashrc.d/fzf/
+            echo "  Installed root .bashrc.d/fzf/completion.bash"
         fi
 
         # Setup vim directories for root

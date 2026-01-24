@@ -43,11 +43,17 @@ fi
 #-----------------------------------------
 # Enable fuzzy finding if fzf is installed
 # Key bindings: Ctrl+R (history), Ctrl+T (files), Alt+C (directories)
-if [ -f /usr/share/doc/fzf/examples/key-bindings.bash ]; then
+# Try bundled version first, fallback to system package
+if [ -f ~/.bashrc.d/fzf/key-bindings.bash ]; then
+    source ~/.bashrc.d/fzf/key-bindings.bash
+elif [ -f /usr/share/doc/fzf/examples/key-bindings.bash ]; then
     source /usr/share/doc/fzf/examples/key-bindings.bash
 fi
 
 # Enable fzf completion (trigger with **)
-if [ -f /usr/share/bash-completion/completions/fzf ]; then
+# Try bundled version first, fallback to system package
+if [ -f ~/.bashrc.d/fzf/completion.bash ]; then
+    source ~/.bashrc.d/fzf/completion.bash
+elif [ -f /usr/share/bash-completion/completions/fzf ]; then
     source /usr/share/bash-completion/completions/fzf
 fi
