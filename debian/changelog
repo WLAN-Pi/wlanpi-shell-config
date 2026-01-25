@@ -1,3 +1,16 @@
+wlanpi-shell-config (1.1.2) bookworm; urgency=medium
+
+  * Add manual tmux session persistence (Prefix+Ctrl-s/Ctrl-r)
+  * Implement checksum-based config management for safe upgrades
+  * Optimize tmux for WLAN Pi use (25k scrollback, 15s refresh)
+  * Refactor status bar to use helper scripts
+  * Add configurable user support via /etc/default/wlanpi-shell-config
+  * Fix: Move tmux choose-tree binding to Prefix+T (was Prefix+Ctrl-s)
+  * Behavior: Package upgrades now auto-update unmodified user configs
+  * Behavior: State files preserved on remove, deleted only on purge
+
+ -- Josh Schmelzle <josh@joshschmelzle.com>  Sun, 25 Jan 2026 14:45:57 -0500
+
 wlanpi-shell-config (1.1.1) bookworm; urgency=medium
 
   * Bundle fzf shell integration (key-bindings and completion)
