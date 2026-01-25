@@ -1,0 +1,9 @@
+#!/bin/bash
+# Display primary network interface and IP for tmux status bar
+
+# Get first UP interface with an IP (excluding loopback and no-carrier)
+IFACE_INFO=$(ip -br addr show | grep -v "^lo" | grep "UP" | grep -v "NO-CARRIER" | awk '{print $1":"$3}' | grep -v ":$" | head -n1)
+
+if [ -n "$IFACE_INFO" ]; then
+    echo "$IFACE_INFO"
+fi

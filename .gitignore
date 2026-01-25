@@ -1,0 +1,17 @@
+# Debian packaging files
+/debian/files
+/debian/*.substvars
+/debian/*.debhelper.log
+/debian/wlanpi-shell-config/
+
+/debian/.debhelper/
+*.deb
+*.buildinfo
+*.changes
+
+# Intermediate build artifacts
+control.tar.xz
+data.tar.xz
+debian-binary
+/debian/debhelper-build-stamp
+

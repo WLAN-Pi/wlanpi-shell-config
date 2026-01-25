@@ -1,0 +1,3 @@
+# The user to apply shell configurations to.
+# This script will manage dotfiles in this user's home directory.
+WLANPI_SHELL_USER="wlanpi"

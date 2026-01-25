@@ -1,0 +1,49 @@
+#!/bin/bash
+# Display Wi-Fi connection info for tmux status bar
+
+# Find first wireless interface
+IFACE=$(/sbin/iw dev 2>/dev/null | grep Interface | awk '{print $2}' | head -n1)
+
+if [ -z "$IFACE" ]; then
+    exit 0
+fi
+
+# Check if connected
+BSSID=$(/sbin/iw dev "$IFACE" link 2>/dev/null | grep "Connected to" | awk '{print $3}' | tr -d ':')
+
+if [ -z "$BSSID" ]; then
+    exit 0
+fi
+
+# Get signal strength
+RSSI=$(/sbin/iw dev "$IFACE" link 2>/dev/null | grep signal | awk '{print $2}')
+
+# Get channel info
+CHAN_INFO=$(/sbin/iw dev "$IFACE" info 2>/dev/null | grep channel)
+CHANNEL=$(echo "$CHAN_INFO" | awk '{print $2}')
+FREQ=$(echo "$CHAN_INFO" | grep -oP '\(\K[0-9]+(?= MHz\))')
+WIDTH=$(echo "$CHAN_INFO" | grep -oP 'width: \K[0-9]+')
+
+# Determine band from frequency
+if [ -n "$FREQ" ]; then
+    if [ "$FREQ" -lt 2500 ]; then
+        BAND="2"
+    elif [ "$FREQ" -lt 5950 ]; then
+        BAND="5"
+    else
+        BAND="6"
+    fi
+fi
+
+# Build output
+OUTPUT="$BSSID"
+
+if [ -n "$RSSI" ]; then
+    OUTPUT="$OUTPUT $RSSI"
+fi
+
+if [ -n "$BAND" ] && [ -n "$CHANNEL" ] && [ -n "$WIDTH" ]; then
+    OUTPUT="$OUTPUT|${BAND}G:${CHANNEL}@${WIDTH}"
+fi
+
+echo "$OUTPUT"

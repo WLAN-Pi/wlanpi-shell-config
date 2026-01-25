@@ -1,0 +1,6 @@
+[submodule "install/etc/skel/.tmux/plugins/tpm"]
+	path = install/etc/skel/.tmux/plugins/tpm
+	url = https://github.com/tmux-plugins/tpm
+[submodule "install/etc/skel/.tmux/plugins/tmux-resurrect"]
+	path = install/etc/skel/.tmux/plugins/tmux-resurrect
+	url = https://github.com/tmux-plugins/tmux-resurrect

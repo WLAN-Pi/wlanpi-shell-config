@@ -9,7 +9,7 @@ This package provides optimized vim, tmux, and bash configurations.
 ## Features
 
 - **tmux changes**
-  - 102,400 line scrollback buffer
+  - 25,000 line scrollback buffer
   - Vi copy mode with clipboard integration
   - Vim-style navigation and resize mode
 
@@ -74,6 +74,10 @@ See `man wlanpi-shell` for additional documentation.
 - `Prefix+r` - Enter resize mode
 - `Prefix+S` - Synchronize panes
 - `Prefix+[` - Enter copy mode (vi keybindings)
+- `Prefix+Ctrl+s` - Save session
+- `Prefix+Ctrl+r` - Restore session
+
+**Status bar:** Shows network interface, Wi-Fi info (when connected), CPU/RAM usage, and time
 
 ### Bash Aliases
 
@@ -112,6 +116,50 @@ User configs in `~/` take precedence over `/etc/skel/`. Edit your copies freely.
 - `/etc/skel/.bashrc.d/wlanpi-shell`
 - `/etc/skel/.bashrc.d/fzf/key-bindings.bash`
 - `/etc/skel/.bashrc.d/fzf/completion.bash`
+- `/usr/lib/wlanpi-shell-config/tmux-status-network` - Network interface status
+- `/usr/lib/wlanpi-shell-config/tmux-status-wifi` - Wi-Fi connection status
+- `/usr/lib/wlanpi-shell-config/tmux-status-system` - CPU and RAM usage
+
+## Tmux plugins
+
+This project vendors the `tmux-resurrect` plugin using Git submodules to provide manual session saving and restoring. This allows users to persist their tmux environment across reboots or disconnects without relying on an internet connection. The workflow is fully manual to be deterministic and minimize SD card wear on SBCs.
+
+The plugins are located in `install/etc/skel/.tmux/plugins/`.
+
+### Updating plugins
+
+To update a plugin to a newer version, you must update its submodule pointer. This ensures the build is reproducible and uses a specific, tested version of the code.
+
+1.  Navigate to the submodule's directory:
+    ```sh
+    cd install/etc/skel/.tmux/plugins/<plugin-name>
+    ```
+    *(Replace `<plugin-name>` with `tpm` or `tmux-resurrect`)*
+
+2.  Fetch the latest changes from the remote repository:
+    ```sh
+    git fetch
+    ```
+
+3.  Check out the desired version (e.g., the `master` branch or a specific tag like `v3.1.0`):
+    ```sh
+    git checkout master # Or git checkout v3.1.0
+    ```
+
+4.  Return to the project's root directory:
+    ```sh
+    cd ../../../../../..
+    ```
+
+5.  Stage the updated submodule in the parent repository. This records the new commit hash.
+    ```sh
+    git add install/etc/skel/.tmux/plugins/<plugin-name>
+    ```
+
+6.  Commit the change to save the updated submodule pointer.
+    ```sh
+    git commit -m "chore(tmux): Update <plugin-name> submodule to new version"
+    ```
 
 ## Building from source
 
@@ -126,6 +174,22 @@ dpkg-buildpackage -us -uc -b
 # Or use sbuild for clean builds
 sbuild
 ```
+
+## Troubleshooting
+
+### Shell enhancements not loading in SSH sessions
+
+**Symptom:** FZF keybindings (Ctrl-R), custom aliases, and other shell enhancements don't work when connecting via SSH.
+
+**Cause:** Missing `~/.profile` file. SSH creates login shells, which source `~/.profile` (not `~/.bashrc` directly). Without `~/.profile`, your `~/.bashrc` and `~/.bashrc.d/` enhancements are never loaded.
+
+**Fix:** Copy the standard `.profile` from `/etc/skel/`:
+
+```bash
+cp /etc/skel/.profile ~/
+```
+
+Then reconnect your SSH session or run: `source ~/.profile`
 
 ## Contributing
 

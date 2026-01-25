@@ -1,40 +1,117 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-# Function to setup vim directories for a user
-setup_vim_dirs() {
-    local user_home=$1
-    local user_name=$2
-    local group_name=$3
-    
-    mkdir -p "$user_home/.vim/undodir"
-    touch "$user_home/.vim/viminfo"
-    
-    if [ "$user_name" != "root" ]; then
-        chown -R "$user_name:$group_name" "$user_home/.vim"
-    fi
-    
-    chmod 600 "$user_home/.vim/viminfo"
-    chmod 700 "$user_home/.vim/undodir"
+# Source debconf library if it exists.
+if [ -f /usr/share/debconf/confmodule ]; then
+    . /usr/share/debconf/confmodule
+fi
+
+# --- NEW CHECKSUM-BASED CONFIG MANAGEMENT ---
+
+# List of user-specific config files to manage relative to home dir.
+# Note: fzf files are treated as part of the package, not user configs.
+CONFIG_FILES=".vimrc .tmux.conf .bash_aliases .bashrc.d/wlanpi-shell .bashrc.d/ghostty"
+
+# Safely get a user's home directory.
+get_home_dir() {
+    getent passwd "$1" | cut -d: -f6
 }
 
-# Function to add bashrc.d sourcing to a user's .bashrc
+# Ensure correct ownership for a file or directory.
+set_owner() {
+    chown "$1":"$1" "$2"
+}
+
+# Calculate MD5 checksum of a file.
+get_checksum() {
+    md5sum "$1" | cut -d' ' -f1
+}
+
+# Core logic for managing a single configuration file for a single user.
+manage_config_file() {
+    user="$1"
+    file_rel_path="$2"
+    home_dir=$(get_home_dir "$user")
+
+    if [ -z "$home_dir" ] || [ ! -d "$home_dir" ]; then
+        echo "wlanpi-shell-config: User '$user' or home directory not found. Skipping."
+        return
+    fi
+
+    user_conf_path="$home_dir/$file_rel_path"
+    skel_conf_path="/etc/skel/$file_rel_path"
+    state_dir="$home_dir/.local/state/wlanpi-shell-config"
+    checksum_file_name=$(echo "$file_rel_path" | tr '/' '_') # a/b -> a_b
+    checksum_file="$state_dir/$checksum_file_name.md5"
+
+    if [ ! -f "$skel_conf_path" ]; then
+        echo "wlanpi-shell-config: Skel file '$skel_conf_path' not found. Cannot manage."
+        return
+    fi
+
+    # Ensure state directory exists and has correct ownership.
+    if [ ! -d "$state_dir" ]; then
+        mkdir -p "$state_dir"
+        # Set owner on .local and .local/state as well if they exist
+        [ -d "$home_dir/.local" ] && set_owner "$user" "$home_dir/.local"
+        [ -d "$home_dir/.local/state" ] && set_owner "$user" "$home_dir/.local/state"
+        set_owner "$user" "$state_dir"
+    fi
+
+    # Case 1: User's config does not exist (Initial Install or user deleted it)
+    if [ ! -f "$user_conf_path" ]; then
+        # If a checksum file exists, it means the user deleted their copy.
+        # We should remove the old checksum to treat this as a fresh install.
+        if [ -f "$checksum_file" ]; then
+            rm "$checksum_file"
+        fi
+
+        echo "wlanpi-shell-config: Installing new config for '$user': $file_rel_path"
+        mkdir -p "$(dirname "$user_conf_path")"
+        cp "$skel_conf_path" "$user_conf_path"
+        set_owner "$user" "$(dirname "$user_conf_path")"
+        set_owner "$user" "$user_conf_path"
+
+        get_checksum "$skel_conf_path" > "$checksum_file"
+        set_owner "$user" "$checksum_file"
+
+    # Case 2: User's config exists (Upgrade or Reinstall)
+    else
+        if [ ! -f "$checksum_file" ]; then
+            # Reinstall: do not overwrite user's file, just inform them.
+            echo "wlanpi-shell-config: Found existing config for '$user': $file_rel_path"
+            echo "                   Not overwriting. New config available at '$skel_conf_path'."
+        else
+            # Upgrade: compare checksums to see if user has made changes.
+            pristine_checksum=$(cat "$checksum_file")
+            user_checksum=$(get_checksum "$user_conf_path")
+
+            if [ "$pristine_checksum" = "$user_checksum" ]; then
+                echo "wlanpi-shell-config: Updating unmodified config for '$user': $file_rel_path"
+                cp "$skel_conf_path" "$user_conf_path"
+                set_owner "$user" "$user_conf_path"
+                get_checksum "$skel_conf_path" > "$checksum_file"
+                set_owner "$user" "$checksum_file"
+            else
+                echo "wlanpi-shell-config: User '$user' has modified '$file_rel_path'. Skipping update."
+                echo "                   New config is at '$skel_conf_path'."
+            fi
+        fi
+    fi
+}
+
+setup_vim_dirs() {
+    user_home=$1; user_name=$2
+    mkdir -p "$user_home/.vim/undodir"
+    touch "$user_home/.vim/viminfo"
+    chown -R "$user_name":"$user_name" "$user_home/.vim"
+    chmod 600 "$user_home/.vim/viminfo"; chmod 700 "$user_home/.vim/undodir"
+}
+
 add_bashrc_sourcing() {
-    local bashrc_file=$1
-    local user_name=$2
-    local group_name=$3
-    
-    if [ ! -f "$bashrc_file" ]; then
-        return
-    fi
-    
-    # Check if sourcing already present
-    if grep -q "bashrc.d" "$bashrc_file"; then
-        return
-    fi
-    
-    # Add sourcing block at end of .bashrc
-    cat >> "$bashrc_file" << 'BASHRC_EOF'
+    bashrc_file=$1; user_name=$2
+    if [ -f "$bashrc_file" ] && ! grep -q "bashrc.d" "$bashrc_file"; then
+        cat >> "$bashrc_file" << 'BASHRC_EOF'
 
 # Source WLAN Pi shell enhancements
 if [ -d ~/.bashrc.d ]; then
@@ -45,130 +122,71 @@ if [ -d ~/.bashrc.d ]; then
     done
 fi
 BASHRC_EOF
-
-    # Set ownership if not root
-    if [ "$user_name" != "root" ]; then
-        chown "$user_name:$group_name" "$bashrc_file"
+        chown "$user_name":"$user_name" "$bashrc_file"
     fi
 }
 
+# --- MAIN LOGIC ---
+
 case "$1" in
     configure)
-        # Setup for wlanpi user (if exists)
-        if [ -d "/home/wlanpi" ]; then
-            echo "Checking for wlanpi user shell configurations..."
+        # Load the primary user from the defaults file, default to 'wlanpi'
+        if [ -f /etc/default/wlanpi-shell-config ]; then
+            . /etc/default/wlanpi-shell-config
+        fi
+        PRIMARY_USER="${WLANPI_SHELL_USER:-wlanpi}"
 
-            # Copy files if they don't exist (never overwrite)
-            if [ ! -f /home/wlanpi/.vimrc ]; then
-                cp /etc/skel/.vimrc /home/wlanpi/
-                chown wlanpi:wlanpi /home/wlanpi/.vimrc
-                echo "  Installed .vimrc"
-            fi
-
-            if [ ! -f /home/wlanpi/.tmux.conf ]; then
-                cp /etc/skel/.tmux.conf /home/wlanpi/
-                chown wlanpi:wlanpi /home/wlanpi/.tmux.conf
-                echo "  Installed .tmux.conf"
-            fi
-
-            if [ ! -f /home/wlanpi/.bash_aliases ]; then
-                cp /etc/skel/.bash_aliases /home/wlanpi/
-                chown wlanpi:wlanpi /home/wlanpi/.bash_aliases
-                echo "  Installed .bash_aliases"
-            fi
-
-            # Setup .bashrc.d directory and files
-            mkdir -p /home/wlanpi/.bashrc.d
-            chown wlanpi:wlanpi /home/wlanpi/.bashrc.d
-
-            if [ ! -f /home/wlanpi/.bashrc.d/wlanpi-shell ]; then
-                cp /etc/skel/.bashrc.d/wlanpi-shell /home/wlanpi/.bashrc.d/
-                chown wlanpi:wlanpi /home/wlanpi/.bashrc.d/wlanpi-shell
-                echo "  Installed .bashrc.d/wlanpi-shell"
-            fi
-
-            if [ ! -f /home/wlanpi/.bashrc.d/ghostty ]; then
-                cp /etc/skel/.bashrc.d/ghostty /home/wlanpi/.bashrc.d/
-                chown wlanpi:wlanpi /home/wlanpi/.bashrc.d/ghostty
-                echo "  Installed .bashrc.d/ghostty"
-            fi
-
-            # Setup fzf directory and files
-            mkdir -p /home/wlanpi/.bashrc.d/fzf
-            chown wlanpi:wlanpi /home/wlanpi/.bashrc.d/fzf
-
-            if [ ! -f /home/wlanpi/.bashrc.d/fzf/key-bindings.bash ]; then
-                cp /etc/skel/.bashrc.d/fzf/key-bindings.bash /home/wlanpi/.bashrc.d/fzf/
-                chown wlanpi:wlanpi /home/wlanpi/.bashrc.d/fzf/key-bindings.bash
-                echo "  Installed .bashrc.d/fzf/key-bindings.bash"
-            fi
-
-            if [ ! -f /home/wlanpi/.bashrc.d/fzf/completion.bash ]; then
-                cp /etc/skel/.bashrc.d/fzf/completion.bash /home/wlanpi/.bashrc.d/fzf/
-                chown wlanpi:wlanpi /home/wlanpi/.bashrc.d/fzf/completion.bash
-                echo "  Installed .bashrc.d/fzf/completion.bash"
-            fi
-
-            # Setup vim directories for wlanpi user
-            setup_vim_dirs "/home/wlanpi" "wlanpi" "wlanpi"
-            
-            # Add .bashrc.d sourcing to wlanpi's .bashrc
-            add_bashrc_sourcing "/home/wlanpi/.bashrc" "wlanpi" "wlanpi"
+        # Define list of users to configure. Always include root.
+        USERS_TO_CONFIGURE="root"
+        if id "$PRIMARY_USER" >/dev/null 2>&1; then
+            USERS_TO_CONFIGURE="$USERS_TO_CONFIGURE $PRIMARY_USER"
+        else
+            echo "wlanpi-shell-config: Primary user '$PRIMARY_USER' not found. Configuring root only."
         fi
 
-        # Setup for root user
-        echo "Configuring root user shell..."
+        # Make the list unique
+        USERS_TO_CONFIGURE=$(echo "$USERS_TO_CONFIGURE" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+
+        echo "wlanpi-shell-config: Configuring shell for users: $USERS_TO_CONFIGURE"
+
+        for user in $USERS_TO_CONFIGURE; do
+            home_dir=$(get_home_dir "$user")
+            if [ -z "$home_dir" ] || [ ! -d "$home_dir" ]; then
+                continue
+            fi
+
+            echo "Processing user: $user"
+
+            # Run new checksum logic for all managed config files
+            for conf_file in $CONFIG_FILES; do
+                manage_config_file "$user" "$conf_file"
+            done
+
+            # --- Static file copies and directory setup (fzf & tmux plugins) ---
+            # These are treated as package data, not user configs, so are always updated/installed.
+
+            # fzf installation
+            mkdir -p "$home_dir/.bashrc.d/fzf"
+            cp /etc/skel/.bashrc.d/fzf/key-bindings.bash "$home_dir/.bashrc.d/fzf/"
+            cp /etc/skel/.bashrc.d/fzf/completion.bash "$home_dir/.bashrc.d/fzf/"
+
+            # Tmux plugins installation and state directory
+            if [ -d "/etc/skel/.tmux" ]; then
+                mkdir -p "$home_dir/.tmux"
+                mkdir -p "$home_dir/.tmux/resurrect" # Pre-create the resurrect save dir
+                cp -a /etc/skel/.tmux/. "$home_dir/.tmux/"
+            fi
+
+            chown -R "$user":"$user" "$home_dir/.bashrc.d"
+            [ -d "$home_dir/.tmux" ] && chown -R "$user":"$user" "$home_dir/.tmux"
+
+            # --- Legacy setup functions ---
+            setup_vim_dirs "$home_dir" "$user"
+            add_bashrc_sourcing "$home_dir/.bashrc" "$user"
+        done
         
-        # Copy config files to root if they don't exist
-        if [ ! -f /root/.vimrc ]; then
-            cp /etc/skel/.vimrc /root/
-            echo "  Installed root .vimrc"
-        fi
-
-        if [ ! -f /root/.tmux.conf ]; then
-            cp /etc/skel/.tmux.conf /root/
-            echo "  Installed root .tmux.conf"
-        fi
-
-        if [ ! -f /root/.bash_aliases ]; then
-            cp /etc/skel/.bash_aliases /root/
-            echo "  Installed root .bash_aliases"
-        fi
-
-        # Setup .bashrc.d for root
-        mkdir -p /root/.bashrc.d
-
-        if [ ! -f /root/.bashrc.d/wlanpi-shell ]; then
-            cp /etc/skel/.bashrc.d/wlanpi-shell /root/.bashrc.d/
-            echo "  Installed root .bashrc.d/wlanpi-shell"
-        fi
-
-        if [ ! -f /root/.bashrc.d/ghostty ]; then
-            cp /etc/skel/.bashrc.d/ghostty /root/.bashrc.d/
-            echo "  Installed root .bashrc.d/ghostty"
-        fi
-
-        # Setup fzf directory and files for root
-        mkdir -p /root/.bashrc.d/fzf
-
-        if [ ! -f /root/.bashrc.d/fzf/key-bindings.bash ]; then
-            cp /etc/skel/.bashrc.d/fzf/key-bindings.bash /root/.bashrc.d/fzf/
-            echo "  Installed root .bashrc.d/fzf/key-bindings.bash"
-        fi
-
-        if [ ! -f /root/.bashrc.d/fzf/completion.bash ]; then
-            cp /etc/skel/.bashrc.d/fzf/completion.bash /root/.bashrc.d/fzf/
-            echo "  Installed root .bashrc.d/fzf/completion.bash"
-        fi
-
-        # Setup vim directories for root
-        setup_vim_dirs "/root" "root" "root"
-        
-        # Add .bashrc.d sourcing to root's .bashrc
-        add_bashrc_sourcing "/root/.bashrc" "root" "root"
-
         echo ""
-        echo "wlanpi-shell-config installed successfully"
+        echo "wlanpi-shell-config configuration complete."
         echo "Documentation: man wlanpi-shell"
         ;;
 esac

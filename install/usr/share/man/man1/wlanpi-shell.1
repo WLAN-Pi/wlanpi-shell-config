@@ -69,7 +69,13 @@ Ctrl+b (default)
 .PP
 .B Session management
 .RS
-Prefix+Ctrl+s    Choose session
+Prefix+Ctrl+s    Save session state
+.RE
+.RS
+Prefix+Ctrl+r    Restore session state
+.RE
+.RS
+Prefix+T         Choose session (Tree view)
 .RE
 
 .PP
@@ -194,6 +200,12 @@ export VISUAL=nano
 /etc/skel/.bash_aliases
 .br
 /etc/skel/.bashrc.d/wlanpi-shell
+.br
+/usr/lib/wlanpi-shell-config/tmux-status-network - Network interface status script
+.br
+/usr/lib/wlanpi-shell-config/tmux-status-wifi - Wi-Fi connection status script
+.br
+/usr/lib/wlanpi-shell-config/tmux-status-system - CPU and RAM usage script
 
 .SH SEE ALSO
 .BR vim (1),

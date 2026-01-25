@@ -1,0 +1,51 @@
+#!/bin/sh
+set -e
+
+# Safely get a user's home directory.
+get_home_dir() {
+    getent passwd "$1" | cut -d: -f6
+}
+
+case "$1" in
+    purge)
+        echo "wlanpi-shell-config: Purging state files..."
+
+        # Load the primary user from the defaults file, default to 'wlanpi'
+        if [ -f /etc/default/wlanpi-shell-config ]; then
+            . /etc/default/wlanpi-shell-config
+        fi
+        PRIMARY_USER="${WLANPI_SHELL_USER:-wlanpi}"
+
+        # Define list of users whose state we might need to clean up.
+        USERS_TO_CLEANUP="root"
+        if id "$PRIMARY_USER" >/dev/null 2>&1; then
+            USERS_TO_CLEANUP="$USERS_TO_CLEANUP $PRIMARY_USER"
+        fi
+
+        # Make the list unique
+        USERS_TO_CLEANUP=$(echo "$USERS_TO_CLEANUP" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+
+        for user in $USERS_TO_CLEANUP; do
+            home_dir=$(get_home_dir "$user")
+            if [ -n "$home_dir" ] && [ -d "$home_dir" ]; then
+                state_dir="$home_dir/.local/state/wlanpi-shell-config"
+                if [ -d "$state_dir" ]; then
+                    echo "wlanpi-shell-config: Removing state directory for user '$user' at $state_dir"
+                    rm -rf "$state_dir"
+                fi
+            fi
+        done
+    ;;
+
+    upgrade|deconfigure|failed-upgrade|remove)
+    ;;
+
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

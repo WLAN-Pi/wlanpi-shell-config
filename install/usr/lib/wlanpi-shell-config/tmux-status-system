@@ -1,0 +1,11 @@
+#!/bin/bash
+# Display CPU and RAM usage for tmux status bar
+
+# Get CPU usage (100 - idle%)
+CPU=$(top -bn2 -d 0.1 | grep "Cpu(s)" | tail -1 | awk '{printf "%.0f", 100-$8}')
+
+# Get RAM usage percentage
+RAM=$(free | awk 'NR==2{printf "%.0f", $3*100/$2}')
+
+# Output with separator
+echo "C:${CPU}% ◎ R:${RAM}%"

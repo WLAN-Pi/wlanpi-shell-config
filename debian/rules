@@ -6,3 +6,20 @@
 override_dh_auto_install:
 	# Install files from install/ directory
 	dh_install
+
+	# Install the defaults file for user configuration
+	install -d $(CURDIR)/debian/wlanpi-shell-config/etc/default
+	install -m 644 $(CURDIR)/debian/wlanpi-shell-config.default $(CURDIR)/debian/wlanpi-shell-config/etc/default/wlanpi-shell-config
+
+	# Install maintainer scripts
+	install -d $(CURDIR)/debian/wlanpi-shell-config/DEBIAN
+	install -m 0755 $(CURDIR)/debian/postinst $(CURDIR)/debian/wlanpi-shell-config/DEBIAN/
+	install -m 0755 $(CURDIR)/debian/postrm $(CURDIR)/debian/wlanpi-shell-config/DEBIAN/
+
+	# Ensure plugin scripts are executable
+	chmod +x $(CURDIR)/debian/wlanpi-shell-config/etc/skel/.tmux/plugins/tpm/tpm
+	find $(CURDIR)/debian/wlanpi-shell-config/etc/skel/.tmux/plugins/ -type f -name "*.sh" -exec chmod +x {} +
+	
+	# Ensure tmux status bar scripts are executable
+	chmod +x $(CURDIR)/debian/wlanpi-shell-config/usr/lib/wlanpi-shell-config/tmux-status-*
+
