@@ -17,9 +17,9 @@ override_dh_auto_install:
 	install -m 0755 $(CURDIR)/debian/postrm $(CURDIR)/debian/wlanpi-shell-config/DEBIAN/
 
 	# Ensure plugin scripts are executable
-	chmod +x $(CURDIR)/debian/wlanpi-shell-config/etc/skel/.tmux/plugins/tpm/tpm
-	find $(CURDIR)/debian/wlanpi-shell-config/etc/skel/.tmux/plugins/ -type f -name "*.sh" -exec chmod +x {} +
+	[ -f $(CURDIR)/debian/wlanpi-shell-config/etc/skel/.tmux/plugins/tpm/tpm ] && chmod +x $(CURDIR)/debian/wlanpi-shell-config/etc/skel/.tmux/plugins/tpm/tpm || true
+	[ -d $(CURDIR)/debian/wlanpi-shell-config/etc/skel/.tmux/plugins ] && find $(CURDIR)/debian/wlanpi-shell-config/etc/skel/.tmux/plugins/ -type f -name "*.sh" -exec chmod +x {} + || true
 	
 	# Ensure tmux status bar scripts are executable
-	chmod +x $(CURDIR)/debian/wlanpi-shell-config/usr/lib/wlanpi-shell-config/tmux-status-*
+	[ -d $(CURDIR)/debian/wlanpi-shell-config/usr/lib/wlanpi-shell-config ] && find $(CURDIR)/debian/wlanpi-shell-config/usr/lib/wlanpi-shell-config/ -name "tmux-status-*" -type f -exec chmod +x {} + || true
 
