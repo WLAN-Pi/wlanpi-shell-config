@@ -2,7 +2,7 @@ Source: wlanpi-shell-config
 Section: utils
 Priority: optional
 Maintainer: Josh Schmelzle <josh@joshschmelzle.com>
-Build-Depends: debhelper-compat (= 13)
+Build-Depends: debhelper-compat (= 13), ncurses-bin
 Standards-Version: 4.6.2
 
 Package: wlanpi-shell-config
