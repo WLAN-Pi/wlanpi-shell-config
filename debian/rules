@@ -7,6 +7,13 @@ override_dh_auto_install:
 	# Install files from install/ directory
 	dh_install
 
+	# Compile the xterm-ghostty terminfo entry into the package. Debian's
+	# ncurses-term does not ship it, so Ghostty (TERM=xterm-ghostty) SSH and
+	# console sessions otherwise error with "unknown terminal type". The entry
+	# is self-contained (no use= deps) so tic needs nothing from ncurses-term.
+	install -d $(CURDIR)/debian/wlanpi-shell-config/usr/share/terminfo
+	tic -x -o $(CURDIR)/debian/wlanpi-shell-config/usr/share/terminfo $(CURDIR)/debian/xterm-ghostty.terminfo
+
 	# Install the defaults file for user configuration
 	install -d $(CURDIR)/debian/wlanpi-shell-config/etc/default
 	install -m 644 $(CURDIR)/debian/wlanpi-shell-config.default $(CURDIR)/debian/wlanpi-shell-config/etc/default/wlanpi-shell-config

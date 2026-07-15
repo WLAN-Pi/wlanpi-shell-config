@@ -1,3 +1,12 @@
+wlanpi-shell-config (1.1.4) trixie; urgency=medium
+
+  * Ship the xterm-ghostty terminfo entry. Debian's ncurses-term does not
+    include it, so console/SSH sessions from Ghostty (TERM=xterm-ghostty)
+    error with "unknown terminal type" (e.g. the tmux status bar at login).
+    The self-contained entry is compiled with tic at build time. (#2)
+
+ -- Josh Schmelzle <josh@joshschmelzle.com>  Wed, 15 Jul 2026 02:10:02 -0400
+
 wlanpi-shell-config (1.1.3) bookworm; urgency=medium
 
   * Rebuild to publish packages for Debian trixie to packagecloud
