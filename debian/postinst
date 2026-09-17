@@ -10,7 +10,7 @@ fi
 
 # List of user-specific config files to manage relative to home dir.
 # Note: fzf files are treated as part of the package, not user configs.
-CONFIG_FILES=".vimrc .tmux.conf .bash_aliases .bashrc.d/wlanpi-shell .bashrc.d/ghostty"
+CONFIG_FILES=".vimrc .tmux.conf .bash_aliases .inputrc .bashrc.d/wlanpi-shell .bashrc.d/ghostty"
 
 # Safely get a user's home directory.
 get_home_dir() {
@@ -126,6 +126,25 @@ BASHRC_EOF
     fi
 }
 
+# Append the sourcing block to /etc/skel/.bashrc too, so users created after
+# install (via adduser) still get the shell enhancements.
+add_skel_bashrc_sourcing() {
+    skel_bashrc=/etc/skel/.bashrc
+    if [ -f "$skel_bashrc" ] && ! grep -q "bashrc.d" "$skel_bashrc"; then
+        cat >> "$skel_bashrc" << 'BASHRC_EOF'
+
+# Source WLAN Pi shell enhancements
+if [ -d ~/.bashrc.d ]; then
+    for file in ~/.bashrc.d/*; do
+        if [ -f "$file" ] && [ -r "$file" ]; then
+            source "$file"
+        fi
+    done
+fi
+BASHRC_EOF
+    fi
+}
+
 # --- MAIN LOGIC ---
 
 case "$1" in
@@ -184,7 +203,10 @@ case "$1" in
             setup_vim_dirs "$home_dir" "$user"
             add_bashrc_sourcing "$home_dir/.bashrc" "$user"
         done
-        
+
+        # Future users created from /etc/skel also get the shell enhancements.
+        add_skel_bashrc_sourcing
+
         echo ""
         echo "wlanpi-shell-config configuration complete."
         echo "Documentation: man wlanpi-shell"

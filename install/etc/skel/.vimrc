@@ -87,7 +87,6 @@ set ttyfast                        " Faster redrawing
 " Key mappings
 let mapleader = " "                " Set leader key to space
 nnoremap <leader>w :w<CR>          " Save with leader+w
-nnoremap <leader>q :q<CR>          " Quit with leader+q
 nnoremap <leader>h :nohlsearch<CR> " Clear search highlighting
 
 " Window splits
