@@ -1,16 +1,18 @@
 wlanpi-shell-config (1.1.5) trixie; urgency=medium
 
-  * tmux: enable OSC 52 clipboard (set-clipboard on) so copy-mode y and mouse
-    drag reach the system clipboard on Ghostty/iTerm2 (no xclip needed)
+  * tmux: clipboard to the terminal via OSC 52 (set-clipboard on) so copy-mode
+    y and mouse drag reach the system clipboard on Ghostty/iTerm2, including
+    headless sensor/SSH use (no external tool needed)
+  * tmux: in an X/desktop session (HDMI + keyboard/mouse) copies use xclip
+    when present to write the X clipboard, falling back to OSC 52 otherwise
   * tmux: add xterm-ghostty extended-keys terminal feature
-  * tmux: simplify copy keybindings to copy-pipe-and-cancel
+  * tmux: copy keybindings use copy-pipe-and-cancel (xclip in X, OSC 52 else)
   * bash: ship ~/.inputrc (layered on /etc/inputrc) with bracketed paste,
     case-insensitive completion, and colorized completion output
   * bash: enable globstar (**) and add fzf look-and-feel defaults
   * bash: source shell enhancements for users created after install
     (append sourcing block to /etc/skel/.bashrc)
   * vim: drop duplicate <leader>q binding (close-window binding retained)
-  * packaging: drop obsolete xclip Suggests
 
  -- Josh Schmelzle <josh@joshschmelzle.com>  Thu, 17 Sep 2026 15:54:53 -0400
 
