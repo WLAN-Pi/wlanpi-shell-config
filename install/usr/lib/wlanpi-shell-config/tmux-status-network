@@ -5,5 +5,5 @@
 IFACE_INFO=$(ip -br addr show | grep -v "^lo" | grep "UP" | grep -v "NO-CARRIER" | awk '{print $1":"$3}' | grep -v ":$" | head -n1)
 
 if [ -n "$IFACE_INFO" ]; then
-    echo "$IFACE_INFO"
+    echo "$IFACE_INFO ◎ "
 fi

@@ -46,4 +46,4 @@ if [ -n "$BAND" ] && [ -n "$CHANNEL" ] && [ -n "$WIDTH" ]; then
     OUTPUT="$OUTPUT|${BAND}G:${CHANNEL}@${WIDTH}"
 fi
 
-echo "$OUTPUT"
+echo "$OUTPUT ◎ "
