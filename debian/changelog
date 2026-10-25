@@ -1,3 +1,14 @@
+wlanpi-shell-config (1.1.6) trixie; urgency=medium
+
+  * tmux: turn on extended keys (csi-u) and request them for xterm-
+    256color clients, so key combos reach apps through Ghostty over SSH
+  * tmux: allow passthrough so terminal escape sequences reach the outer
+    terminal
+  * tmux: run the network and Wi-Fi status scripts once per refresh
+    instead of twice
+
+ -- jsz <josh@joshschmelzle.com>  Sat, 24 Oct 2026 21:58:03 -0400
+
 wlanpi-shell-config (1.1.5) trixie; urgency=medium
 
   * tmux: clipboard to the terminal via OSC 52 (set-clipboard on) so copy-mode
